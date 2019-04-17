@@ -176,12 +176,15 @@ public class Node {
 //        
 //    }
     private static void caseI(Node x){
-            if(x.getParent().isRed() && x.getUncle().isRed()){
+        if(x.getUncle()==null)//null means black
+            return;
+        if(x.getParent().isRed() && x.getUncle().isRed()){
             x.getParent().recolor();
-            x.getUncle().recolor();
+            if(x.getUncle() !=null)
+                x.getUncle().recolor();
             x.getParent().getParent().recolor();
             caseI(x.getGrandParent());
-            }
+        }
     }
     private boolean inSameLineAsParent(){
         if(this==null) return false;
@@ -215,6 +218,7 @@ public class Node {
     private static void fixTree(Node x){//Handle insertion cases
         if(x.getParent().isBlack())
             return;
+        boolean UncleisBlack =false;
         if( x== Node.getRoot(x) || x.root ==true)//comparison done better
         {
             x.root = true;
@@ -222,11 +226,16 @@ public class Node {
             x.Color = COLOR.BLACK;
             return;
         }
-        if(x.parent.isRed() && x.getUncle().isRed()){ //CASE I
-            caseI(x);
-            return;
-        }
-        if(x.parent.isRed() && x.getUncle().isBlack()){//Case II,III 
+        if(x.getUncle()!= null)
+            if(x.parent.isRed() && x.getUncle().isRed()){ //CASE I
+                caseI(x);
+                return;
+            }
+        if(x.getUncle()==null)
+            UncleisBlack = true;
+        else if(x.getUncle().isBlack())
+            UncleisBlack = true;
+        if(x.parent.isRed() &&UncleisBlack){
             if(x.inSameLineAsParent()==false){ // case II not in same line
                 if(x.isRight()){
                     x=x.rotateLeftMyParent();
