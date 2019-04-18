@@ -178,6 +178,9 @@ public class Node {
     private static void caseI(Node x){
         if(x.getUncle()==null)//null means black
             return;
+        if(x.getUncle().isBlack())
+            return;
+        
         if(x.getParent().isRed() && x.getUncle().isRed()){
             x.getParent().recolor();
             if(x.getUncle() !=null)
@@ -185,6 +188,16 @@ public class Node {
             x.getParent().getParent().recolor();
             caseI(x.getGrandParent());
         }
+        if(x == Node.ROOT)
+            x.Color=COLOR.BLACK;
+            
+    }
+    public static Node createRoot(int data){
+        Node.ROOT = new Node(data, COLOR.BLACK);
+        Node.ROOT.parent = null;
+        Node.ROOT.left = null;
+        Node.ROOT.right = null;
+        return Node.ROOT;
     }
     private boolean inSameLineAsParent(){
         if(this==null) return false;
@@ -197,24 +210,92 @@ public class Node {
     private Node rotateLeftMyParent(){//left rotate my parent
         Node Parent = this.getParent();
         this.getGrandParent().left = this;
+        boolean newRoot= false;
+        if(Parent.parent == null ||Parent ==Node.ROOT)
+            newRoot=true;
+       
         this.parent = this.getGrandParent();
         Parent.right=this.left;
         Parent.right.parent = Parent;
         this.left = Parent;
         Parent.parent = this;
+        if(newRoot){
+            Node.ROOT = this;
+            this.Color = COLOR.BLACK;
+            this.parent = null;
+        }
         return Parent;
     }
     private Node rotateRightMyParent(){
         Node Parent = this.getParent();
+        boolean newRoot= false;
+        if(Parent.parent == null ||Parent ==Node.ROOT)
+            newRoot=true;
         this.getGrandParent().right = this;
+        
+        
         this.parent = this.getGrandParent();
         Parent.left = this.right;
         Parent.left.parent = Parent;
         this.right = Parent;
         Parent.parent = Parent;
+        if(newRoot){
+            Node.ROOT = this;
+            this.Color = COLOR.BLACK;
+            this.parent = null;
+        }
         return Parent;
         
     }
+    
+    private Node leftRotate( ){
+     Node x = this;
+     Node y = x.right;
+     x.right = y.left;
+     if(y.left!= null){
+         y.left.parent = x;
+     }
+     y.parent = x.parent;
+     if(x.parent == null)
+         Node.ROOT = y;
+     else if(x == x.parent.left){
+         x.parent.left= y;
+     }
+     else{
+         x.parent.right = y;
+     }
+     y.left = x;
+     x.parent = y;
+     return null;
+    }
+
+   private Node rightRotate(){
+       Node x= this.parent;
+       Node y = x.left;
+       x.left= y.right;
+       if(y.right != null){
+           y.right.parent = x;
+       }
+       y.parent = x.parent;
+       if(x.parent == null){
+           Node.ROOT = y;
+       }
+       else if(x == x.parent.right){
+           x.parent.right = y;
+       }
+       else{
+           x.parent.left= y;
+       }
+       y.right= x;
+       x.parent = y;
+       
+       //you must return Parent node as new x to reoclor it... so get it later
+       return null;
+       
+   }
+    
+    
+    
     private static void fixTree(Node x){//Handle insertion cases
         if(x.getParent().isBlack())
             return;
