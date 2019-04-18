@@ -16,7 +16,6 @@ public class Node {//make your node generic < >
     COLOR Color;
     int data;
     public static Node ROOT;
-    boolean root=false;
     
     public enum COLOR{ RED,BLACK};
     public Node(int data,COLOR Col) {
@@ -32,7 +31,6 @@ public class Node {//make your node generic < >
         this.right = null;
         this.data=it;
         this.Color=COLOR.RED;
-        this.root = false;
     }
     
     public static void Inorder(Node node){
@@ -50,7 +48,7 @@ public class Node {//make your node generic < >
     }
     
     public boolean isRoot(){
-        return root;
+        return Node.ROOT == this;
     }
     public boolean isRed(){
         return Color==COLOR.RED;
@@ -103,9 +101,9 @@ public class Node {//make your node generic < >
         return parent.getSibling();
     }
     public Node getParent(){
-        if(root==true)
-            return null;
-        return parent;
+        if(parent!=null)
+            return parent;
+        return null;
     }
     public Node getGrandParent(){
         return getParent().getParent();
@@ -250,16 +248,19 @@ public class Node {//make your node generic < >
             return;
         if(x.getUncle().isBlack())
             return;
-        
+        Node node = null;
         if(x.getParent().isRed() && x.getUncle().isRed()){
             x.getParent().recolor();
             if(x.getUncle() !=null)
                 x.getUncle().recolor();
             x.getParent().getParent().recolor();
-            caseI(x.parent.parent);
+            node= x.parent.parent;
+            caseI(node);
         }
-        if(x == Node.ROOT)
-            x.Color=COLOR.BLACK;
+        if(node == Node.ROOT || node.parent == null){
+            node.Color=COLOR.BLACK;
+            Node.ROOT = node;
+        }
             
     }
     public static Node createRoot(int data){
@@ -370,12 +371,13 @@ public class Node {//make your node generic < >
     
     
     private static void fixTree(Node x){//Handle insertion cases
+        if(x.Color == COLOR.BLACK)
+            return;
         if(x.getParent().isBlack())
             return;
         boolean UncleisBlack =false;
-        if( x== Node.getRoot(x) || x.root ==true)//comparison done better
+        if( x== Node.ROOT || x.parent == null )//comparison done better
         {
-            x.root = true;
             Node.ROOT = x;
             x.Color = COLOR.BLACK;
             return;
@@ -389,12 +391,19 @@ public class Node {//make your node generic < >
             UncleisBlack = true;
         else if(x.getUncle().isBlack())
             UncleisBlack = true;
+        Node case2to3 = x;
+        boolean case2_3 = false;
         if(x.parent.isRed() &&UncleisBlack){
             if(x.inSameLineAsParent()==false){ // case II not in same line
                 if(x.isRight()){
-                    x=x.parent.leftRotate();
+                    x.parent.leftRotate();
+                    case2_3 = true;
+                    x =case2to3 = x.left;
                 }else if(x.isLeft()){
-                    x=x.parent.rightRotate();
+                    x.parent.rightRotate();
+                    case2_3 = true;
+                    x=case2to3 = x.right;
+                    
                 }
                 
             }
@@ -403,10 +412,10 @@ public class Node {//make your node generic < >
             if(x.getUncle()==null)
                 UncleisBlack = true;
             else if(x.getUncle().isBlack())
-                UncleisBlack = false;
-            if(x.inSameLineAsParent() == true &&UncleisBlack){
+                UncleisBlack = true;
+            if((x.inSameLineAsParent() == true &&UncleisBlack) || case2_3){
                 if(x.getGrandParent()!=null)
-                    x.getGrandParent().recolor();
+                    x.parent.parent.recolor();
                 x.parent.recolor();
                 if(x.isLeft()){ // Left Left case
                     
