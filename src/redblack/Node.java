@@ -9,7 +9,7 @@ package redblack;
  *
  * @author MarwanSaad
  */
-public class Node {
+public class Node {//make your node generic < >  
     Node parent;
     Node left;
     Node right;
@@ -21,11 +21,15 @@ public class Node {
     public enum COLOR{ RED,BLACK};
     public Node(int data,COLOR Col) {
         this.parent = null;
+        this.left = null;
+        this.right = null;
         this.Color=Col;
         this.data = data;
     }
     public Node(int it){
         this.parent = null;
+        this.left = null;
+        this.right = null;
         this.data=it;
         this.Color=COLOR.RED;
         this.root = false;
@@ -39,6 +43,8 @@ public class Node {
             System.out.print("R:");
         else
             System.out.print("B:");
+        if(Node.ROOT==node)
+            System.out.print("ROOT:");
         System.out.print(node.data+" ");
         Inorder(node.right);
     }
@@ -61,15 +67,16 @@ public class Node {
     }
     
     public boolean isRight(){
-        if(root==true)
+        if(Node.ROOT==this || this.parent == null)
             return false;
+        
         
         return parent.right==this;
     }
 
     
     public boolean isLeft(){
-        if(root=true)
+        if(Node.ROOT==this || this.parent == null)
             return false;
         return parent.left==this;
     }
@@ -83,6 +90,7 @@ public class Node {
 
     public static void setROOT(Node ROOT) {
         Node.ROOT = ROOT;
+        Node.ROOT.Color = COLOR.BLACK;
     }
     
     public Node getLeft(){
@@ -125,19 +133,81 @@ public class Node {
         
        Node nd=null;  
         if(data > node.data ){
-            nd= insert(node.right, data);
+            node.right = insert(node.right, data);
+            if(node.right!=null){
+                node.right.parent = node;
+                nd=node.right;
+                fixTree(nd);
+            }
         
         }
         else if(data < node.data){
-            nd = insert(node.left,data);
+            node.left = insert(node.left,data);
+            if(node.left!=null){
+                node.left.parent = node;
+                nd=node.left;
+                fixTree(nd);
+            }
 
+        }else //equal
+            return node;//Means Equal data
+        
+        
+        return node;
+    }
+    public static Node insertBST(Node node,int data){
+        
+        
+        if(node == null)
+        {
+            return new Node(data);
         }
-        if(nd !=null)
-                if(nd.parent == null)
-                    nd.parent = node;
-        Node ref = nd;
-        fixTree(nd);
-        return ref;
+        
+        
+       Node nd=null;  
+        if(data > node.data ){
+            nd = insertBST(node.right, data);
+            node.right = nd;
+            node.right.parent = node;
+        }
+        else if(data < node.data){
+            nd = insertBST(node.left,data);
+            node.left  = nd;
+            node.left.parent= node;
+        }else
+            return node;
+        
+        return node;
+        
+    }
+    public static void insertIter(Node node, int data ) { 
+        Node last=null;
+        while(node!=null && node!=last){
+            last = node;
+            if(data <node.data){
+                node=node.left;
+                if(node == null){
+                    node = new Node(data);
+                    node.parent = last;
+                    last.left = node;
+                    fixTree(node);
+                    return ;
+                }
+            }
+            else if(data > node.data){
+                node = node.right;
+                if(node == null){
+                    node = new Node(data);
+                    node.parent = last;
+                    last.right = node;
+                    fixTree(node);
+                    return;
+                }
+            }
+            else return;
+            
+                
+        }
     }
     public static Node getRoot(Node Nod){
         Node curr= Nod;
@@ -186,7 +256,7 @@ public class Node {
             if(x.getUncle() !=null)
                 x.getUncle().recolor();
             x.getParent().getParent().recolor();
-            caseI(x.getGrandParent());
+            caseI(x.parent.parent);
         }
         if(x == Node.ROOT)
             x.Color=COLOR.BLACK;
@@ -200,7 +270,7 @@ public class Node {
         return Node.ROOT;
     }
     private boolean inSameLineAsParent(){
-        if(this==null) return false;
+        if(this.parent==null) return false;
         
         if(this.isRight() == this.getParent().isRight())//if the are r
             return true;
@@ -209,11 +279,12 @@ public class Node {
     }
     private Node rotateLeftMyParent(){//left rotate my parent
         Node Parent = this.getParent();
-        this.getGrandParent().left = this;
         boolean newRoot= false;
         if(Parent.parent == null ||Parent ==Node.ROOT)
             newRoot=true;
-       
+        else
+            this.getGrandParent().left = this;
+        
         this.parent = this.getGrandParent();
         Parent.right=this.left;
         Parent.right.parent = Parent;
@@ -231,7 +302,8 @@ public class Node {
         boolean newRoot= false;
         if(Parent.parent == null ||Parent ==Node.ROOT)
             newRoot=true;
-        this.getGrandParent().right = this;
+        else
+            this.getGrandParent().right = this;
         
         
         this.parent = this.getGrandParent();
@@ -256,8 +328,9 @@ public class Node {
          y.left.parent = x;
      }
      y.parent = x.parent;
-     if(x.parent == null)
-         Node.ROOT = y;
+     if(x.parent == null){
+         Node.setROOT(y);
+     }
      else if(x == x.parent.left){
          x.parent.left= y;
      }
@@ -266,11 +339,11 @@ public class Node {
      }
      y.left = x;
      x.parent = y;
-     return null;
+     return x;
     }
 
-   private Node rightRotate(){
-       Node x= this.parent;
+   private Node rightRotate(){//
+       Node x= this;
        Node y = x.left;
        x.left= y.right;
        if(y.right != null){
@@ -278,7 +351,7 @@ public class Node {
        }
        y.parent = x.parent;
        if(x.parent == null){
-           Node.ROOT = y;
+           Node.setROOT(y);
        }
        else if(x == x.parent.right){
            x.parent.right = y;
@@ -290,7 +363,7 @@ public class Node {
        x.parent = y;
        
        //you must return Parent node as new x to reoclor it... so get it later
-       return null;
+       return x;
        
    }
     
@@ -319,20 +392,30 @@ public class Node {
         if(x.parent.isRed() &&UncleisBlack){
             if(x.inSameLineAsParent()==false){ // case II not in same line
                 if(x.isRight()){
-                    x=x.rotateLeftMyParent();
+                    x=x.parent.leftRotate();
                 }else if(x.isLeft()){
-                    x = x.rotateLeftMyParent();
+                    x=x.parent.rightRotate();
                 }
                 
             }
-            if(x.inSameLineAsParent() == true){
-                x.getGrandParent().recolor();
+            
+            UncleisBlack = false;
+            if(x.getUncle()==null)
+                UncleisBlack = true;
+            else if(x.getUncle().isBlack())
+                UncleisBlack = false;
+            if(x.inSameLineAsParent() == true &&UncleisBlack){
+                if(x.getGrandParent()!=null)
+                    x.getGrandParent().recolor();
                 x.parent.recolor();
                 if(x.isLeft()){ // Left Left case
                     
-                    x.parent.rotateRightMyParent();
+                   //x.parent.rotateRightMyParent();
+                    
+                    x.parent.rightRotate();
                 }else if(x.isRight()){ //Right Right Case
-                    x.parent.rotateLeftMyParent();
+                   // x.parent.rotateLeftMyParent();
+                    x.parent.leftRotate();
                 }
             }
         }
