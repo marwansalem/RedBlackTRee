@@ -420,11 +420,12 @@ public class Node {//make your node generic < >
                 if(x.isLeft()){ // Left Left case
                     
                    //x.parent.rotateRightMyParent();
-                    
-                    x.parent.rightRotate();
+                    if(x.parent.parent!=null)
+                    x.parent.parent.rightRotate();
                 }else if(x.isRight()){ //Right Right Case
                    // x.parent.rotateLeftMyParent();
-                    x.parent.leftRotate();
+                    if(x.parent.parent!=null)
+                    x.parent.parent.leftRotate();
                 }
             }
         }
