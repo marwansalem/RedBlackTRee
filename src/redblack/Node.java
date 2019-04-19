@@ -92,9 +92,15 @@ public class Node {//make your node generic < >
     }
 
     public static void setROOT(Node ROOT) {
+        if(ROOT == null)
+            return;
         Node.ROOT = ROOT;
-        if(ROOT.isLeft())
-            Node.ROOT.parent.left=null;
+        if(Node.ROOT.parent!=null){
+            if(Node.ROOT.isLeft())
+                Node.ROOT.parent.left=null;
+            if(Node.ROOT.isRight())
+                Node.ROOT.parent.right =null;
+        }
         Node.ROOT.parent = null;
         
         Node.ROOT.Color = COLOR.BLACK;
@@ -177,6 +183,8 @@ public class Node {//make your node generic < >
                 }
             }
         }
+        
+        System.out.println("FIXED");
     }
     public Node getLeft(){
         return this.left;
@@ -437,11 +445,21 @@ public class Node {//make your node generic < >
 
    public Node rightRotate(){//
        Node x= this;
+       if(this == Node.ROOT)
+         System.out.println("Rotating : " + x.data   + "Parent:"+x.parent);      
        Node y = x.left;
+       if(y==null)
+           return x;
+       System.out.println(y);
+       if(y!=null){
        x.left= y.right;
        if(y.right != null){
            y.right.parent = x;
        }
+       }
+       else x.left = null;
+       
+       if(y!=null)
        y.parent = x.parent;
        if(x.parent == null || x == Node.ROOT){
             Node.setROOT(y);
@@ -455,7 +473,8 @@ public class Node {//make your node generic < >
        else{
            x.parent.left= y;
        }
-       y.right= x;
+       if(y!=null)
+        y.right= x;
        x.parent = y;
        
        //you must return Parent node as new x to reoclor it... so get it later
