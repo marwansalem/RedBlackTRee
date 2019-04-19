@@ -18,8 +18,11 @@ public class RedBlack {
         // TODO code application logic here
         Node ROOT = new Node(10);
         Node.setROOT(ROOT);
-        Node.insert(ROOT, 20);
-        Node.insert(ROOT, 20);
+        ROOT.left = new Node(5);
+        ROOT.right = new Node(20);
+        ROOT.leftRotate();
+        
+        Node.Inorder(Node.ROOT);
     }
     
 }
