@@ -43,7 +43,12 @@ public class Node {//make your node generic < >
             System.out.print("B:");
         if(Node.ROOT==node)
             System.out.print("ROOT:");
+        if(node.isRight())
+            System.out.print("RIGHT");
+        else if(node.isLeft())
+            System.out.print("LEFT");
         System.out.print(node.data+" ");
+        
         Inorder(node.right);
     }
     
@@ -88,9 +93,91 @@ public class Node {//make your node generic < >
 
     public static void setROOT(Node ROOT) {
         Node.ROOT = ROOT;
+        if(ROOT.isLeft())
+            Node.ROOT.parent.left=null;
+        Node.ROOT.parent = null;
+        
         Node.ROOT.Color = COLOR.BLACK;
     }
-    
+    private static void reFix(Node x){
+        if(x.parent == null)
+            return;
+        if(x.Color == COLOR.RED && x.parent.isBlack() )
+            return;
+        if(x.parent == Node.ROOT)
+            return;
+        boolean UncleisBlack =false;
+        boolean UncleisRed = false;
+        if(x.getUncle() == null)
+            UncleisBlack = true;
+        else if(x.getUncle().isBlack())
+            UncleisBlack = true;
+        else if((x.getUncle().Color == COLOR.RED))
+            UncleisRed = true;
+        int icase = 0;
+        if(UncleisRed)
+            icase = 1;
+        if(UncleisBlack && x.inSameLineAsParent())
+            icase = 2;
+        if(UncleisBlack && !x.inSameLineAsParent())
+            icase = 3;
+        boolean done = false;
+        Node node =x;
+        while(!done){
+            switch(icase){
+                case 1:{
+                    if(node == Node.ROOT){
+                        node.Color = COLOR.BLACK;
+                        done = true;
+                    }else{
+                    node.parent.Color = COLOR.BLACK;
+                    node.getUncle().recolor();
+                    node.parent.parent.Color = COLOR.RED;
+                    node = node.parent.parent;
+                    }
+                    node = node.parent.parent;
+
+                    break;
+                }
+                case 2:{
+                    Node ref = node.parent;
+                    if(node.isLeft()){
+                        node.parent.rightRotate();
+                    }else if(node.isRight()){
+                        node.parent.leftRotate();
+                    }else{//when should this happen?
+                        done = true;
+                        break;
+                    }
+                    node = ref;
+                    icase = 3;
+                    break;
+                }case 3:{
+                    if(node.parent.parent != null){
+                    node.parent.parent.recolor();
+                    node.parent.recolor();
+                    }
+                    if(node.isLeft()){
+                        if(node.parent.parent!=null)
+                            node.parent.parent.rightRotate();
+                    }else if(node.isRight()){
+                            if(node.parent.parent!=null)
+                                node.parent.parent.leftRotate();
+                    }else{
+                        done = true;
+                        break;
+                    }
+
+                    done = true;
+                    break;
+                }
+                default:{
+                    done = true;
+                    break;
+                }
+            }
+        }
+    }
     public Node getLeft(){
         return this.left;
     }
@@ -188,7 +275,7 @@ public class Node {//make your node generic < >
                     node = new Node(data);
                     node.parent = last;
                     last.left = node;
-                    fixTree(node);
+                    reFix(node);
                     return ;
                 }
             }
@@ -198,7 +285,7 @@ public class Node {//make your node generic < >
                     node = new Node(data);
                     node.parent = last;
                     last.right = node;
-                    fixTree(node);
+                    reFix(node);
                     return;
                 }
             }
@@ -255,9 +342,11 @@ public class Node {//make your node generic < >
                 x.getUncle().recolor();
             x.getParent().getParent().recolor();
             node= x.parent.parent;
+            System.out.println(x.data+" Case 1");
             caseI(node);
         }
         if(node == Node.ROOT || node.parent == null){
+            System.out.println(x.data+" Case 1 ROOT");
             node.Color=COLOR.BLACK;
             Node.ROOT = node;
         }
@@ -272,7 +361,6 @@ public class Node {//make your node generic < >
     }
     private boolean inSameLineAsParent(){
         if(this.parent==null) return false;
-        
         if(this.isRight() == this.getParent().isRight())//if the are r
             return true;
         return false;
@@ -321,7 +409,7 @@ public class Node {//make your node generic < >
         
     }
     
-    private Node leftRotate( ){
+    public Node leftRotate( ){
      Node x = this;
      Node y = x.right;
      x.right = y.left;
@@ -329,8 +417,12 @@ public class Node {//make your node generic < >
          y.left.parent = x;
      }
      y.parent = x.parent;
-     if(x.parent == null){
+     if(x.parent == null ||x == Node.ROOT){
          Node.setROOT(y);
+         Node.ROOT = y;
+         y.parent = null;
+         y.Color = COLOR.BLACK;
+         
      }
      else if(x == x.parent.left){
          x.parent.left= y;
@@ -343,7 +435,7 @@ public class Node {//make your node generic < >
      return x;
     }
 
-   private Node rightRotate(){//
+   public Node rightRotate(){//
        Node x= this;
        Node y = x.left;
        x.left= y.right;
@@ -351,8 +443,11 @@ public class Node {//make your node generic < >
            y.right.parent = x;
        }
        y.parent = x.parent;
-       if(x.parent == null){
-           Node.setROOT(y);
+       if(x.parent == null || x == Node.ROOT){
+            Node.setROOT(y);
+            Node.ROOT = y;
+            y.parent = null;
+            y.Color = COLOR.BLACK;
        }
        else if(x == x.parent.right){
            x.parent.right = y;
@@ -378,6 +473,7 @@ public class Node {//make your node generic < >
         boolean UncleisBlack =false;
         if( x== Node.ROOT || x.parent == null )//comparison done better
         {
+            System.out.println(x.data+" Fixed");
             Node.ROOT = x;
             x.Color = COLOR.BLACK;
             return;
@@ -396,10 +492,12 @@ public class Node {//make your node generic < >
         if(x.parent.isRed() &&UncleisBlack){
             if(x.inSameLineAsParent()==false){ // case II not in same line
                 if(x.isRight()){
+                    System.out.println(x.data+" Case II x RIGHT");
                     x.parent.leftRotate();
                     case2_3 = true;
                     x =case2to3 = x.left;
                 }else if(x.isLeft()){
+                    System.out.println(x.data+" Case II x left");
                     x.parent.rightRotate();
                     case2_3 = true;
                     x=case2to3 = x.right;
@@ -414,23 +512,21 @@ public class Node {//make your node generic < >
             else if(x.getUncle().isBlack())
                 UncleisBlack = true;
             if((x.inSameLineAsParent() == true &&UncleisBlack) || case2_3){
+                
                 if(x.getGrandParent()!=null)
                     x.parent.parent.recolor();
                 x.parent.recolor();
                 if(x.isLeft()){ // Left Left case
-                    
+                    System.out.println(x.data+" Case III LL");
                    //x.parent.rotateRightMyParent();
-                    if(x.parent.parent!=null)
-                    x.parent.parent.rightRotate();
+                    x.parent.rightRotate();
                 }else if(x.isRight()){ //Right Right Case
                    // x.parent.rotateLeftMyParent();
-                    if(x.parent.parent!=null)
-                    x.parent.parent.leftRotate();
+                    System.out.println(x.data+" Case III RR");
+                    x.parent.leftRotate();
                 }
             }
         }
-            
-            
-        
+ 
     }
 }
