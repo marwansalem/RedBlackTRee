@@ -16,6 +16,9 @@ public class Node {//make your node generic < >
     COLOR Color;
     int data;
     public static Node ROOT;
+    static {
+        ROOT = null;
+    }
     
     public enum COLOR{ RED,BLACK};
     public Node(int data,COLOR Col) {
@@ -34,6 +37,7 @@ public class Node {//make your node generic < >
     }
     
     public static void Inorder(Node node){
+        
         if(node == null)
             return ;
         Inorder(node.left);
@@ -50,6 +54,15 @@ public class Node {//make your node generic < >
         System.out.print(node.data+" ");
         
         Inorder(node.right);
+    }
+    public static int getTreeHeight(Node node){// number of nodes from root to nil // nill not counted;
+        if(node == null)
+            return 0; // to count edges returns -1;
+        int leftHeight  = getTreeHeight(node.left);
+        int rightHeight = getTreeHeight(node.right);
+        int max = leftHeight>rightHeight?leftHeight:rightHeight;
+        return 1+max;
+        
     }
     
     public boolean isRoot(){
@@ -186,6 +199,69 @@ public class Node {//make your node generic < >
         
         System.out.println("FIXED");
     }
+    
+    private static void fix(Node node){
+       if(node.parent == null || Node.ROOT == node)
+           return;
+       boolean done = true; 
+       if(node.parent != null && Node.ROOT != node)
+           if(node.parent.isRed())
+               done = false;
+       while(!done ){
+           Node uncle = node.getUncle();
+           boolean uncleB = false;
+           if(uncle == null)
+               uncleB = true;
+           else if(uncle.isBlack())
+               uncleB = true;
+           
+           //if parent is left
+            if(node.parent == node.parent.parent.left){
+                if(!uncleB){//red uncle
+                    node.parent.Color = COLOR.BLACK;
+                    if(uncle !=null)
+                        uncle.Color = COLOR.BLACK;
+                    node.parent.parent.Color = COLOR.RED;
+                    node = node.parent.parent;
+                }else{//uncle black
+                    if(node ==  node.parent.right){
+                        node = node.parent;
+                        node.leftRotate();
+                        
+                    }
+                    node.parent.Color = COLOR.BLACK;
+                    node.parent.parent.Color = COLOR.RED;
+                    node.parent.parent.rightRotate();
+
+
+                }
+           }else{
+                if(!uncleB){
+                    node.parent.Color = COLOR.BLACK;  
+                    if(uncle !=null)
+                        uncle.Color = COLOR.BLACK;
+                    node.parent.parent.Color = COLOR.RED;
+                    node = node.parent.parent;
+                }else{
+                    if(node == node.parent.left){
+                        node = node.parent;
+                        node.rightRotate();
+                    }
+                    node.parent.Color = COLOR.BLACK;
+                    node.parent.parent.Color = COLOR.RED;
+                    node.parent.parent.leftRotate();
+                }
+            }
+           
+            if(node.parent != null && Node.ROOT != node)
+                if(node.parent.isRed())
+                    done = false;
+                else done =true;
+            else done = true;
+       }
+       Node.ROOT.Color = COLOR.BLACK; 
+       
+    }
     public Node getLeft(){
         return this.left;
     }
@@ -208,16 +284,21 @@ public class Node {//make your node generic < >
         return data;
     }
     
-//    public static Node getRoot(Node node){
-//        
-//        while(node!=null){
-//            if(node.isRoot())
-//                return node;
-//            node=node.getParent();
-//        }
-//        return null;
-//    }
-    public static Node insert(Node node, int data){
+    public static Node getRoot(Node node){
+        
+        while(node!=null){
+            if(node.isRoot())
+                return node;
+            node=node.getParent();
+        }
+        return null;
+    }
+    public static Node insertDeprecated(Node node, int data){
+        if(Node.ROOT == null){
+            node = new Node(data);
+            Node.setROOT(node);
+            return Node.ROOT;
+        }
         if(node == null)
         {
             return new Node(data);
@@ -226,7 +307,7 @@ public class Node {//make your node generic < >
         
        Node nd=null;  
         if(data > node.data ){
-            node.right = insert(node.right, data);
+            node.right = insertDeprecated(node.right, data);
             if(node.right!=null){
                 node.right.parent = node;
                 nd=node.right;
@@ -235,7 +316,7 @@ public class Node {//make your node generic < >
         
         }
         else if(data < node.data){
-            node.left = insert(node.left,data);
+            node.left = insertDeprecated(node.left,data);
             if(node.left!=null){
                 node.left.parent = node;
                 nd=node.left;
@@ -248,32 +329,13 @@ public class Node {//make your node generic < >
         
         return node;
     }
-    public static Node insertBST(Node node,int data){
-        
-        
-        if(node == null)
-        {
-            return new Node(data);
+    public static void insert(int data ) { 
+        Node node = Node.ROOT;
+        if(node == null){
+            node = new Node(data);
+            setROOT(node);
+            return;
         }
-        
-        
-       Node nd=null;  
-        if(data > node.data ){
-            nd = insertBST(node.right, data);
-            node.right = nd;
-            node.right.parent = node;
-        }
-        else if(data < node.data){
-            nd = insertBST(node.left,data);
-            node.left  = nd;
-            node.left.parent= node;
-        }else
-            return node;
-        
-        return node;
-        
-    }
-    public static void insertIter(Node node, int data ) { 
         Node last=null;
         while(node!=null && node!=last){
             last = node;
@@ -281,9 +343,13 @@ public class Node {//make your node generic < >
                 node=node.left;
                 if(node == null){
                     node = new Node(data);
+                    
                     node.parent = last;
-                    last.left = node;
-                    reFix(node);
+                    if(last != null)
+                        last.left = node;
+                    if(Node.ROOT == null)
+                        Node.setROOT(node);
+                    fix(node);
                     return ;
                 }
             }
@@ -292,8 +358,11 @@ public class Node {//make your node generic < >
                 if(node == null){
                     node = new Node(data);
                     node.parent = last;
-                    last.right = node;
-                    reFix(node);
+                    if(last!=null)
+                        last.right = node;
+                    if(Node.ROOT == null)
+                        Node.setROOT(node);
+                    fix(node);
                     return;
                 }
             }
@@ -302,17 +371,17 @@ public class Node {//make your node generic < >
                 
         }
     }
-    public static Node getRoot(Node Nod){
-        Node curr= Nod;
-        if(ROOT== null){
-            while(curr.parent!=null){
-                curr = curr.getParent();
-            }
-            return ROOT = curr;
-        }
-        return ROOT; 
-    }
-    
+//    private static Node getRoot(Node Nod){
+//        Node curr= Nod;
+//        if(ROOT== null){
+//            while(curr.parent!=null){
+//                curr = curr.getParent();
+//            }
+//            return ROOT = curr;
+//        }
+//        return ROOT; 
+//    }
+//    
     
 //    public void insert(Item IT){
 //        Node newnode= new Node(IT);
@@ -360,7 +429,7 @@ public class Node {//make your node generic < >
         }
             
     }
-    public static Node createRoot(int data){
+    private static Node createRoot(int data){
         Node.ROOT = new Node(data, COLOR.BLACK);
         Node.ROOT.parent = null;
         Node.ROOT.left = null;
@@ -417,7 +486,7 @@ public class Node {//make your node generic < >
         
     }
     
-    public Node leftRotate( ){
+    private Node leftRotate( ){
      Node x = this;
      Node y = x.right;
      x.right = y.left;
@@ -443,7 +512,7 @@ public class Node {//make your node generic < >
      return x;
     }
 
-   public Node rightRotate(){//
+    private Node rightRotate(){//
        Node x= this;
        if(this == Node.ROOT)
          System.out.println("Rotating : " + x.data   + "Parent:"+x.parent);      
@@ -484,7 +553,8 @@ public class Node {//make your node generic < >
     
     
     
-    private static void fixTree(Node x){//Handle insertion cases
+    
+   private static void fixTree(Node x){//Handle insertion cases
         if(x.Color == COLOR.BLACK)
             return;
         if(x.getParent().isBlack())
@@ -538,11 +608,11 @@ public class Node {//make your node generic < >
                 if(x.isLeft()){ // Left Left case
                     System.out.println(x.data+" Case III LL");
                    //x.parent.rotateRightMyParent();
-                    x.parent.rightRotate();
+                    x.parent.parent.rightRotate();
                 }else if(x.isRight()){ //Right Right Case
                    // x.parent.rotateLeftMyParent();
                     System.out.println(x.data+" Case III RR");
-                    x.parent.leftRotate();
+                    x.parent.parent.leftRotate();
                 }
             }
         }
