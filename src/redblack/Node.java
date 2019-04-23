@@ -13,11 +13,13 @@ public class Node {//make your node generic < >
     Node parent;
     Node left;
     Node right;
+    static int count;
     COLOR Color;
     int data;
     public static Node ROOT;
     static {
         ROOT = null;
+        count = 0;
     }
     
     public enum COLOR{ RED,BLACK};
@@ -88,6 +90,7 @@ public class Node {//make your node generic < >
         
         
         return parent.right==this;
+        
     }
 
     
@@ -103,7 +106,37 @@ public class Node {//make your node generic < >
             return parent.left;
         return null;
     }
+    
+    public Node getLeft(){
+        return this.left;
+    }
+    public Node getRight(){
+        return this.right;
+    }
+    public Node getUncle(){
+        return parent.getSibling();
+    }
+    public Node getParent(){
+        if(parent!=null)
+            return parent;
+        return null;
+    }
+    public Node getGrandParent(){
+        return getParent().getParent();
+    }
 
+    public int getData() {
+        return data;
+    }
+    
+    public Node findSuccessor(){
+        Node node = this.right;//find left most root in the right subtree
+        while(node.left !=null){
+            node = node.left;
+        }
+        return node;
+    }
+    
     public static void setROOT(Node ROOT) {
         if(ROOT == null)
             return;
@@ -117,6 +150,50 @@ public class Node {//make your node generic < >
         Node.ROOT.parent = null;
         
         Node.ROOT.Color = COLOR.BLACK;
+    }
+    
+    public static Node BSTdelete(int target){
+        Node current = Node.ROOT;
+        while(current!=null){
+            if(target < current.data){
+                current = current.left;
+            }else if(target > current.data){
+                current = current.left;
+            }else{
+                break;//current contains target data
+            }
+        }
+        if(current == null)
+            return null;
+        if(current!=null)
+        {
+            if(current.left!=null &&current.right !=null)
+            {
+                Node successor = current.findSuccessor();
+                current.data  = successor.data;
+                if(successor.Color == COLOR.RED){
+                    successor.parent.left = null;
+                    successor.parent = null;
+                }else{//Successor is black
+                    boolean condition =false;//successor black and has only 1 red child
+                    if(successor.left==null){
+                        if(successor.right.Color == COLOR.RED){
+                            condition = true;
+                            int temp = successor.data;
+                            successor.data = successor.right.data;
+                            successor.right.data =temp;
+                            
+                        }
+                        
+                    }
+                    
+                    
+                }
+            }
+        }        
+        Node temp = null;
+        return temp;//just to remove error
+        
     }
     private static void reFix(Node x){
         if(x.parent == null)
@@ -262,27 +339,7 @@ public class Node {//make your node generic < >
        Node.ROOT.Color = COLOR.BLACK; 
        
     }
-    public Node getLeft(){
-        return this.left;
-    }
-    public Node getRight(){
-        return this.right;
-    }
-    public Node getUncle(){
-        return parent.getSibling();
-    }
-    public Node getParent(){
-        if(parent!=null)
-            return parent;
-        return null;
-    }
-    public Node getGrandParent(){
-        return getParent().getParent();
-    }
-
-    public int getData() {
-        return data;
-    }
+    
     
     public static Node getRoot(Node node){
         
@@ -334,6 +391,7 @@ public class Node {//make your node generic < >
         if(node == null){
             node = new Node(data);
             setROOT(node);
+            count++;
             return;
         }
         Node last=null;
