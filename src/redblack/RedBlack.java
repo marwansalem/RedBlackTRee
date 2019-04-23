@@ -14,9 +14,11 @@ public class RedBlack {
     /**
      * @param args the command line arguments
      */
+    
     public static void main(String[] args) {
         // TODO code application logic here
         Node ROOT = new Node(10);
+ 
 //        ROOT.left = new Node(5);
 //        ROOT.right = new Node(20);
 //        ROOT.left.parent = ROOT;
@@ -30,6 +32,7 @@ public class RedBlack {
         Node.insert(30);
         Node.insert(15);
         Node.Inorder(Node.ROOT);
+        System.out.println(Node.getTreeHeight(Node.ROOT));
     }
     
 }
