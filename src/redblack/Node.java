@@ -37,7 +37,21 @@ public class Node {//make your node generic < >
         this.data=it;
         this.Color=COLOR.RED;
     }
-    
+    private boolean rightIsBlack(){
+        if(this.right == null)
+            return true;
+        if(this.right.Color == COLOR.BLACK)
+            return true;
+        return false;
+    }
+    private boolean leftisBlack(){
+       
+        if(this.left == null)
+            return true;
+        if(this.left.Color == COLOR.BLACK)
+            return true;
+        return false;
+    }
     public static void Inorder(Node node){
         
         if(node == null)
@@ -676,4 +690,110 @@ public class Node {//make your node generic < >
         }
  
     }
+   
+    public static void transplant(Node a , Node b) {
+        if(a.parent == null || a.parent == Node.ROOT) {
+            setROOT(b);
+        }else if(a.isLeft()){
+            a.parent.left = b;
+        }else{
+            a.parent.right = b;
+        }
+        b.parent = a.parent;
+    }
+    public static Node search(int target){
+        Node current = Node.ROOT;
+        while(current!=null){
+            if(current.data == target)
+                break;
+            else if(target<current.data)
+                current = current.left;
+            else
+                current = current.right;
+        }
+        return current;
+    }
+    public static void delete(int target){
+        Node current = search(target);
+        if(current == null) return;
+        Node y = current;
+        COLOR original = y.Color;
+        Node x=null;
+        if(current.left ==null){
+            x = current.right;
+            transplant(current, current.right);
+        }else if(current.right == null){
+            x = current.left;
+            transplant(current,current.left);
+        }else y=current.findSuccessor();
+        original = y.Color;
+        x = y.right;
+        if(y.parent == current){
+            x.parent = y;
+        }else{
+            transplant(y, y.right);
+            y.right.parent = y;
+        }
+        transplant(current,y);
+        y.left = current.left;
+        y.left.parent = y;
+        y.Color = current.Color;
+        if(original == COLOR.BLACK)
+            deleteFix(x);
+    }
+    private static void deleteFix(Node x){
+        while(x!=Node.ROOT && x.Color == COLOR.BLACK)   
+        {
+            Node w = null;
+            if(x==x.parent.left){
+                w = x.parent.right;
+                if(w.Color==COLOR.RED)
+                {
+                    w.Color = COLOR.BLACK;
+                    x.parent.Color = COLOR.RED;
+                    x.parent.leftRotate();
+                    w = x.parent.right;
+                }
+                if(w.left.Color == COLOR.BLACK && w.right.Color == COLOR.BLACK){
+                    w.Color = COLOR.RED;
+                    x = x.parent;
+                }else if(w.right.Color == COLOR.BLACK){
+                    w.left.Color = COLOR.BLACK;
+                    w.Color = COLOR.RED;
+                    w.rightRotate();
+                    w = x.parent.right;
+                }
+                w.Color = x.parent.Color;
+                x.parent.Color = COLOR.BLACK;
+                w.right.Color = COLOR.BLACK;
+                x.parent.leftRotate();
+                x=Node.ROOT;
+            }else{
+                w = x.parent.left;
+                if(w.Color==COLOR.RED)
+                {
+                    w.Color = COLOR.BLACK;
+                    x.parent.Color = COLOR.RED;
+                    x.parent.rightRotate();
+                    w = x.parent.left;
+                }
+                if(w.right.Color == COLOR.BLACK && w.left.Color == COLOR.BLACK){
+                    w.Color = COLOR.RED;
+                    x = x.parent;
+                }else if(w.left.Color == COLOR.BLACK){
+                    w.right.Color = COLOR.BLACK;
+                    w.Color = COLOR.RED;
+                    w.leftRotate();
+                    w = x.parent.left;
+                }
+                w.Color = x.parent.Color;
+                x.parent.Color = COLOR.BLACK;
+                w.right.Color = COLOR.BLACK;
+                x.parent.rightRotate();
+                x=Node.ROOT;
+            }
+        } 
+        x.Color = COLOR.BLACK;
+    }
+   
 }
