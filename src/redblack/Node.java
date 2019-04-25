@@ -15,7 +15,7 @@ public class Node {//make your node generic < >
     Node right;
     static int count;
     COLOR Color;
-    int data;
+    String data;
     public static Node ROOT;
     static {
         ROOT = null;
@@ -23,14 +23,14 @@ public class Node {//make your node generic < >
     }
     
     public enum COLOR{ RED,BLACK};
-    public Node(int data,COLOR Col) {
+    public Node(String data,COLOR Col) {
         this.parent = null;
         this.left = null;
         this.right = null;
         this.Color=Col;
         this.data = data;
     }
-    public Node(int it){
+    public Node(String it){
         this.parent = null;
         this.left = null;
         this.right = null;
@@ -139,7 +139,7 @@ public class Node {//make your node generic < >
         return getParent().getParent();
     }
 
-    public int getData() {
+    public String getData() {
         return data;
     }
     
@@ -166,12 +166,12 @@ public class Node {//make your node generic < >
         Node.ROOT.Color = COLOR.BLACK;
     }
     
-    public static Node BSTdelete(int target){
+    public static Node BSTdelete(String target){
         Node current = Node.ROOT;
         while(current!=null){
-            if(target < current.data){
+            if(target.compareTo(current.data) < 0){
                 current = current.left;
-            }else if(target > current.data){
+            }else if(target.compareTo(current.data) > 0){
                 current = current.left;
             }else{
                 break;//current contains target data
@@ -193,7 +193,7 @@ public class Node {//make your node generic < >
                     if(successor.left==null){
                         if(successor.right.Color == COLOR.RED){
                             condition = true;
-                            int temp = successor.data;
+                            String temp = successor.data;
                             successor.data = successor.right.data;
                             successor.right.data =temp;
                             
@@ -364,7 +364,7 @@ public class Node {//make your node generic < >
         }
         return null;
     }
-    public static Node insertDeprecated(Node node, int data){
+    public static Node insertDeprecated(Node node, String data){
         if(Node.ROOT == null){
             node = new Node(data);
             Node.setROOT(node);
@@ -377,7 +377,7 @@ public class Node {//make your node generic < >
         
         
        Node nd=null;  
-        if(data > node.data ){
+        if(data.compareTo(node.data) >0 ){
             node.right = insertDeprecated(node.right, data);
             if(node.right!=null){
                 node.right.parent = node;
@@ -386,7 +386,7 @@ public class Node {//make your node generic < >
             }
         
         }
-        else if(data < node.data){
+        else if(data.compareTo(node.data)<0){
             node.left = insertDeprecated(node.left,data);
             if(node.left!=null){
                 node.left.parent = node;
@@ -400,7 +400,7 @@ public class Node {//make your node generic < >
         
         return node;
     }
-    public static void insert(int data ) { 
+    public static void insert(String data ) { 
         Node node = Node.ROOT;
         if(node == null){
             node = new Node(data);
@@ -411,7 +411,7 @@ public class Node {//make your node generic < >
         Node last=null;
         while(node!=null && node!=last){
             last = node;
-            if(data <node.data){
+            if(data.compareTo(node.data)<0){
                 node=node.left;
                 if(node == null){
                     node = new Node(data);
@@ -425,7 +425,7 @@ public class Node {//make your node generic < >
                     return ;
                 }
             }
-            else if(data > node.data){
+            else if(data.compareTo(node.data)>0){
                 node = node.right;
                 if(node == null){
                     node = new Node(data);
@@ -501,7 +501,7 @@ public class Node {//make your node generic < >
         }
             
     }
-    private static Node createRoot(int data){
+    private static Node createRoot(String data){
         Node.ROOT = new Node(data, COLOR.BLACK);
         Node.ROOT.parent = null;
         Node.ROOT.left = null;
@@ -701,19 +701,19 @@ public class Node {//make your node generic < >
         }
         b.parent = a.parent;
     }
-    public static Node search(int target){
+    public static Node search(String target){
         Node current = Node.ROOT;
         while(current!=null){
-            if(current.data == target)
+            if(current.data.equals(target))
                 break;
-            else if(target<current.data)
+            else if(target.compareTo(current.data)<0)
                 current = current.left;
             else
                 current = current.right;
         }
         return current;
     }
-    public static void delete(int target){
+    public static void delete(String target){
         Node current = search(target);
         if(current == null) return;
         Node y = current;
